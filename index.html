@@ -53,8 +53,9 @@
 
             function showPage(index) {
                 while (index < pages.length) {
-                    const page = pages[index].trim();
+                    let page = pages[index].trim();
 
+                    // END 처리
                     if (page.includes('$END$')) {
                         const [realPage] = page.split('$END$');
                         output.textContent = realPage.trim();
@@ -63,12 +64,14 @@
                         return;
                     }
 
+                    // $CHOICE$ 혹은 빈 줄은 건너뜀
                     if (page.startsWith('$CHOICE$') || page === '') {
                         index++;
                         currentPage = index;
                         continue;
                     }
 
+                    // 일반 페이지 출력
                     output.textContent = page;
                     nextBtn.style.display = 'inline-block';
                     currentPage = index;
