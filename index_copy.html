@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>인터랙티브 스토리</title>
+    <style>
+        #nextBtn {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .choiceBtn {
+            display: block;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #eee;
+            border: 1px solid #aaa;
+            cursor: pointer;
+            width: fit-content;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>📄 파일 내용</h2>
+    <pre id="output">불러오는 중...</pre>
+    <button id="nextBtn">다음</button>
+    <div id="choices"></div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const filePath = params.get('file');
+            const flag = params.get('flag');
+            const now = params.get('now');
+
+            const output = document.getElementById('output');
+            const nextBtn = document.getElementById('nextBtn');
+            const choicesDiv = document.getElementById('choices');
+
+            let pages = [];
+            let currentPage = 0;
+            function mergeFlags(currentFlag, textFlag) {
+                if (currentFlag.length !== textFlag.length) return currentFlag;
+                return currentFlag.split('').map((c, i) => textFlag[i] !== '0' ? textFlag[i] : c).join('');
+            }
+
+            function showPage(index) {
+                while (index < pages.length) {
+                    const page = pages[index].trim();
+
+                    // $FLAG$ 감지 후 병합 처리
+                    const matchFlag = page.match(/\$FLAG\$(\d{10})/);
+                    if (matchFlag) {
+                        flag = mergeFlags(flag, matchFlag[1]);
+                    }
+
+                    // $CHOICE$ 구조 검증 및 선택지 표시
+                    if (page.includes('$CHOICE$')) {
+                        const lines = page.split('\n');
+                        const mainLines = [];
+                        const choiceLines = [];
+                        for (const line of lines) {
+                            if (line.trim().startsWith('$CHOICE$')) {
+                                choiceLines.push(line.trim());
+                            } else {
+                                mainLines.push(line.trim());
+                            }
+                        }
+                        output.textContent = mainLines.join('\n');
+                        nextBtn.style.display = 'none';
+                        showChoices(choiceLines);
+                        return;
+                    }
+
+                    if (page === '') {
+                        index++;
+                        currentPage = index;
+                        continue;
+                    }
+
+                    output.textContent = page;
+                    nextBtn.style.display = 'inline-block';
+                    currentPage = index;
+                    return;
+                }
+
+                nextBtn.style.display = 'none';
+            }
+
+            function showChoices(choiceLines) {
+                choicesDiv.innerHTML = '';
+                for (const line of choiceLines) {
+                    if (!line.startsWith('$CHOICE$$')) continue;
+
+                    const parts = line.replace('$CHOICE$$', '').split('$');
+                    // if (parts.length < 2) continue;
+
+                    const file = parts[0].trim();
+                    const label = parts[1].trim();
+                    const newURL = `index.html?file=${encodeURIComponent(file)}&flag=${flag}&now=${now}`;
+
+                    const btn = document.createElement('button');
+                    btn.textContent = file;
+                    btn.className = 'choiceBtn';
+                    btn.addEventListener('click', () => {
+                        window.location.href = newURL;
+                    });
+
+                    choicesDiv.appendChild(btn);
+                }
+            }
+
+            if (filePath) {
+                fetch(filePath)
+                    .then(res => {
+                        if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
+                        return res.text();
+                    })
+                    .then(text => {
+                        pages = text.split('$NEXT$').map(s => s.trim()).filter(s => s.length > 0);
+                        showPage(currentPage);
+                    })
+                    .catch(err => {
+                        output.textContent = `에러: ${err.message}`;
+                    });
+            } else {
+                output.textContent = 'file 파라미터가 없습니다.';
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentPage++;
+                showPage(currentPage);
+            });
+        });
+    </script>
+</body>
+
+</html>
