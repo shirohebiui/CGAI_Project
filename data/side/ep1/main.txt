@@ -27,6 +27,6 @@
 이 좁은 공간에서 마법을 쓰면 반드시 흔적이 남는다.
 그녀는 숨을 죽이고, 지팡이를 거두었다.
 
-$CHOICE$$side/ep1/choice1.txt$마법 없이 문제를 해결하려 한다.
+$CHOICE$$data/side/ep1/choice1.txt$마법 없이 문제를 해결하려 한다.
 
-$CHOICE$$side/ep1/choice2.txt$마법을 써서 빠르게 끝낸다.
+$CHOICE$$data/side/ep1/choice2.txt$마법을 써서 빠르게 끝낸다.
