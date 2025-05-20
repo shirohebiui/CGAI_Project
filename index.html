@@ -87,7 +87,7 @@
                         const choiceId = choiceText.toLowerCase().replace(/\s+/g, '');
                         const basePath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
                         const nextFile = `${basePath}${choiceId}.txt`;
-                        const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flag}&now=${now}`;
+                        const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flagString}&now=${filenow}`;
 
                         const btn = document.createElement('button');
                         btn.textContent = choiceText;
