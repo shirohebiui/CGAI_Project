@@ -102,7 +102,7 @@
                         return res.text();
                     })
                     .then(text => {
-                        pages = text.split('$NEXT$').map(s => s.trim()).filter(s => s.length > 0);
+                        pages = text.split("$NEXT$").map(s => s.trim()).filter(s => s.length > 0);
                         showPage(currentPage);
                     })
                     .catch(err => {
