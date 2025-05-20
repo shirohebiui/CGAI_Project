@@ -95,7 +95,7 @@
                     if (!line.startsWith('$CHOICE$$')) continue;
 
                     const parts = line.replace('$CHOICE$$', '').split('$');
-                    if (parts.length < 2) continue;
+                    // if (parts.length < 2) continue;
 
                     const file = parts[0].trim();
                     const label = parts[1].trim();
