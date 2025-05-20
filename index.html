@@ -5,17 +5,18 @@
   <title>TXT Viewer</title>
 </head>
 <body>
-  <h2>파일 내용</h2>
-  <pre id="output">Loading...</pre>
+  <h2>📄 파일 내용</h2>
+<pre id="output">Loading...</pre>
 
-  <h3>FLAG 목록</h3>
-  <ul id="flags"></ul>
+<h2>🚩 FLAG 표시</h2>
+<ul id="flags"></ul>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const filePath = params.get('file'); // ex: file=data/example.txt
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const filePath = params.get('file');
+  const flagString = params.get('flag'); // ex: "1010101010"
 
-     // FLAG 분해 후 출력
+  // FLAG 분해 후 출력
   const flagList = document.getElementById('flags');
   if (flagString && flagString.length === 10) {
     [...flagString].forEach((char, index) => {
@@ -27,23 +28,22 @@
     flagList.innerHTML = "<li>올바르지 않은 FLAG 형식입니다 (길이 10 필요)</li>";
   }
 
-
-    // txt 파일 불러오기
-    if (filePath) {
-      fetch(filePath)
-        .then(response => {
-          if (!response.ok) throw new Error('파일을 불러올 수 없습니다');
-          return response.text();
-        })
-        .then(text => {
-          document.getElementById('output').textContent = text;
-        })
-        .catch(err => {
-          document.getElementById('output').textContent = `에러: ${err.message}`;
-        });
-    } else {
-      document.getElementById('output').textContent = 'file 파라미터가 없습니다.';
-    }
-  </script>
+  // 파일 내용 fetch
+  if (filePath) {
+    fetch(filePath)
+      .then(res => {
+        if (!res.ok) throw new Error("파일을 불러올 수 없습니다");
+        return res.text();
+      })
+      .then(text => {
+        document.getElementById('output').textContent = text;
+      })
+      .catch(err => {
+        document.getElementById('output').textContent = `에러: ${err.message}`;
+      });
+  } else {
+    document.getElementById('output').textContent = 'file 파라미터가 없습니다.';
+  }
+</script>
 </body>
 </html>
