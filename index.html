@@ -57,11 +57,9 @@
                     const page = content[index].trim();
 
                     if (page === '$END$') {
+                        output.textContent = '선택지를 고르세요:';
                         nextBtn.style.display = 'none';
-                        showChoices();
-                    } else if (page.startsWith('$CHOICE$')) {
-                        // 무시: choice는 따로 처리
-                        showChoices();
+                        showChoices(index + 1);
                     } else {
                         output.textContent = page;
                         nextBtn.style.display = 'inline-block';
@@ -71,12 +69,10 @@
                 }
             }
 
-            function showChoices() {
+            function showChoices(startIndex) {
                 choicesDiv.innerHTML = '';
-                output.textContent = '선택지를 고르세요:';
-
-                for (let i = currentPage; i < content.length; i++) {
-                    const line = content[i].trim();
+                for (let i = startIndex; i < pages.length; i++) {
+                    const line = pages[i].trim();
                     if (line.startsWith('$CHOICE$')) {
                         const choiceText = line.replace('$CHOICE$', '').trim();
                         const btn = document.createElement('button');
