@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>텍스트 페이지 보기</title>
@@ -16,42 +16,45 @@
   <button id="nextBtn">다음</button>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const filePath = params.get('file');
-    let pages = [];  // $로 분할된 페이지 저장
-    let currentPage = 0;
+    // JS 실행을 DOM 완성 이후로 지연
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const filePath = params.get('file');
+      const output = document.getElementById('output');
+      const nextBtn = document.getElementById('nextBtn');
 
-    const output = document.getElementById('output');
-    const nextBtn = document.getElementById('nextBtn');
+      let pages = [];
+      let currentPage = 0;
 
-    function showPage(index) {
-      output.textContent = pages[index].trim();
-      nextBtn.style.display = index < pages.length - 1 ? 'inline-block' : 'none';
-    }
-
-    if (filePath) {
-      fetch(filePath)
-        .then(res => {
-          if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
-          return res.text();
-        })
-        .then(text => {
-          pages = text.split('$');
-          if (pages.length === 0) throw new Error('내용이 없습니다.');
-          showPage(currentPage);
-        })
-        .catch(err => {
-          output.textContent = `에러: ${err.message}`;
-        });
-    } else {
-      output.textContent = 'file 파라미터가 없습니다.';
-    }
-
-    nextBtn.addEventListener('click', () => {
-      currentPage++;
-      if (currentPage < pages.length) {
-        showPage(currentPage);
+      function showPage(index) {
+        output.textContent = pages[index].trim();
+        nextBtn.style.display = (index < pages.length - 1) ? 'inline-block' : 'none';
       }
+
+      if (filePath) {
+        fetch(filePath)
+          .then(res => {
+            if (!res.ok) throw new Error("파일을 불러올 수 없습니다");
+            return res.text();
+          })
+          .then(text => {
+            pages = text.split('$');
+            if (pages.length === 0) throw new Error("내용이 없습니다.");
+            showPage(currentPage);
+          })
+          .catch(err => {
+            output.textContent = `에러: ${err.message}`;
+          });
+      } else {
+        output.textContent = "file 파라미터가 없습니다.";
+      }
+
+      nextBtn.addEventListener("click", () => {
+        currentPage++;
+        if (currentPage < pages.length) {
+          showPage(currentPage);
+        }
+      });
     });
   </script>
 </body>
