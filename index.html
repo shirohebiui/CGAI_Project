@@ -10,7 +10,8 @@
             display: none;
         }
 
-        .choiceBtn {
+        .choiceBtn,
+        .jumpBtn {
             display: block;
             margin: 5px 0;
             padding: 10px;
@@ -43,8 +44,14 @@
             let currentPage = 0;
 
             function mergeFlags(currentFlag, textFlag) {
-                if (currentFlag.length !== textFlag.length) return currentFlag;
-                return currentFlag.split('').map((c, i) => textFlag[i] !== '0' ? textFlag[i] : c).join('');
+                const maxLength = Math.max(currentFlag.length, textFlag.length);
+                let result = '';
+                for (let i = 0; i < maxLength; i++) {
+                    const c = currentFlag[i] || '0';
+                    const t = textFlag[i] || '0';
+                    result += t !== '0' ? t : c;
+                }
+                return result;
             }
 
             function jumpToRandomUnsetFlag(flag) {
@@ -59,7 +66,7 @@
                 const nextURL = `index.html?file=${nextFile}&flag=${newFlag}&now=${selected}`;
 
                 const jumpBtn = document.createElement('button');
-                jumpBtn.textContent = '\u2192 이동';
+                jumpBtn.textContent = '→ 이동';
                 jumpBtn.className = 'jumpBtn';
                 jumpBtn.addEventListener('click', () => {
                     window.location.href = nextURL;
@@ -72,13 +79,13 @@
                     let page = pages[index].trim();
 
                     // $FLAG$ 감지 후 병합 처리
-                    const matchFlag = page.match(/\$FLAG\$(\d{10})/);
+                    const matchFlag = page.match(/\$FLAG\$([a-zA-Z0-9]{10})/);
                     if (matchFlag) {
                         flag = mergeFlags(flag, matchFlag[1]);
-                        page = page.replace(/\$FLAG\$\d{10}/, '').trim();
+                        page = page.replace(/\$FLAG\$[a-zA-Z0-9]{10}/, '').trim();
                     }
 
-                    // $END$ 처리 후 랜덤 분기
+                    // $END$ 처리 후 랜덤 분기 (지금은 버튼으로 대기)
                     if (page.includes('$END$')) {
                         page = page.replace('$END$', '').trim();
                         output.textContent = page;
@@ -130,7 +137,7 @@
 
                     const file = parts[0].trim();
                     const label = parts[1].trim();
-                    const newURL = `index.html?file=${file}&flag=${flag}&now=${now}`;
+                    const newURL = `index.html?file=${encodeURIComponent(file)}&flag=${flag}&now=${now}`;
 
                     const btn = document.createElement('button');
                     btn.textContent = label;
@@ -157,7 +164,7 @@
                         output.textContent = `에러: ${err.message}`;
                     });
             } else {
-                output.textContent = 'file 파라미터가 없습니다.';
+                output.textContent = 'file 파라미터가 비어있습니다.';
             }
 
             nextBtn.addEventListener('click', () => {
