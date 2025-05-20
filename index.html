@@ -72,12 +72,53 @@
                         currentPage = index;
                         continue;
                     }
+
+                    if (page.includes('$END$')) {
+                        // 자동 분기 처리
+                        processRandomFlagJump(flag, now);
+                        return;
+                    }
                     return;
                 }
 
                 nextBtn.style.display = 'none';
             }
 
+            function processRandomFlagJump(flag, now) {
+                const zeroIndices = [];
+                for (let i = 0; i < flag.length; i++) {
+                    if (flag[i] === '0') zeroIndices.push(i);
+                }
+
+                if (zeroIndices.length === 0) return; // 0이 없으면 아무 것도 하지 않음
+
+                const randomIndex = zeroIndices[Math.floor(Math.random() * zeroIndices.length)];
+
+                // flag 문자열에서 해당 위치만 1로 바꾸기
+                const newFlagArray = flag.split('');
+                newFlagArray[randomIndex] = '1';
+                const newFlag = newFlagArray.join('');
+
+                // epx 경로 구성
+                const newFilePath = `data/side/ep${randomIndex}/main.txt`;
+
+                // URL 생성 및 이동
+                const nextURL = `index.html?file=${encodeURIComponent(newFilePath)}&flag=${newFlag}&now=${randomIndex}`;
+                window.location.href = nextURL;
+            }
+
+            function mergeFlags(currentFlag, textFlag) {
+                if (currentFlag.length !== textFlag.length) {
+                    console.error("FLAG 길이 불일치");
+                    return currentFlag;
+                }
+
+                const merged = currentFlag.split('').map((char, i) => {
+                    return textFlag[i] !== '0' ? textFlag[i] : char;
+                });
+
+                return merged.join('');
+            }
 
             function showChoices(choiceLines) {
                 choicesDiv.innerHTML = '';
@@ -104,14 +145,18 @@
             }
 
 
-
             if (filePath) {
                 fetch(filePath)
+
                     .then(res => {
                         if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
                         return res.text();
                     })
                     .then(text => {
+                        const flagFromText = (text.match(/\$FLAG\$(\d{10})/) || [])[1];
+                        if (flagFromText) {
+                            flag = mergeFlags(flag, flagFromText);  // flag는 전역 변수 또는 URL 파라미터로 받은 값
+                        }
                         pages = text.split('$NEXT$').map(s => s.trim()).filter(s => s.length > 0);
                         showPage(currentPage);
                     })
