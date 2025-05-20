@@ -41,17 +41,26 @@
 
             let pages = [];
             let currentPage = 0;
+            function mergeFlags(currentFlag, textFlag) {
+                if (currentFlag.length !== textFlag.length) return currentFlag;
+                return currentFlag.split('').map((c, i) => textFlag[i] !== '0' ? textFlag[i] : c).join('');
+            }
 
             function showPage(index) {
                 while (index < pages.length) {
                     const page = pages[index].trim();
 
-                    // $CHOICE$가 포함된 페이지라면 본문과 선택지를 분리
+                    // $FLAG$ 감지 후 병합 처리
+                    const matchFlag = page.match(/\$FLAG\$(\d{10})/);
+                    if (matchFlag) {
+                        flag = mergeFlags(flag, matchFlag[1]);
+                    }
+
+                    // $CHOICE$ 구조 검증 및 선택지 표시
                     if (page.includes('$CHOICE$')) {
                         const lines = page.split('\n');
                         const mainLines = [];
                         const choiceLines = [];
-
                         for (const line of lines) {
                             if (line.trim().startsWith('$CHOICE$')) {
                                 choiceLines.push(line.trim());
@@ -59,8 +68,6 @@
                                 mainLines.push(line.trim());
                             }
                         }
-
-                        // 본문 출력
                         output.textContent = mainLines.join('\n');
                         nextBtn.style.display = 'none';
                         showChoices(choiceLines);
@@ -73,55 +80,13 @@
                         continue;
                     }
 
-                    if (page.includes('$END$')) {
-                        // 자동 분기 처리
-                        processRandomFlagJump(flag, now);
-                        const flagFromText = (text.match(/\$FLAG\$(\d{10})/) || [])[1];
-                        if (flagFromText) {
-                            flag = mergeFlags(flag, flagFromText);  // flag는 전역 변수 또는 URL 파라미터로 받은 값
-                        }
-                        return;
-                    }
+                    output.textContent = page;
+                    nextBtn.style.display = 'inline-block';
+                    currentPage = index;
                     return;
                 }
 
                 nextBtn.style.display = 'none';
-            }
-
-            function processRandomFlagJump(flag, now) {
-                const zeroIndices = [];
-                for (let i = 0; i < flag.length; i++) {
-                    if (flag[i] === '0') zeroIndices.push(i);
-                }
-
-                if (zeroIndices.length === 0) return; // 0이 없으면 아무 것도 하지 않음
-
-                const randomIndex = zeroIndices[Math.floor(Math.random() * zeroIndices.length)];
-
-                // flag 문자열에서 해당 위치만 1로 바꾸기
-                const newFlagArray = flag.split('');
-                newFlagArray[randomIndex] = '1';
-                const newFlag = newFlagArray.join('');
-
-                // epx 경로 구성
-                const newFilePath = `data/side/ep${randomIndex}/main.txt`;
-
-                // URL 생성 및 이동
-                const nextURL = `index.html?file=${encodeURIComponent(newFilePath)}&flag=${newFlag}&now=${randomIndex}`;
-                window.location.href = nextURL;
-            }
-
-            function mergeFlags(currentFlag, textFlag) {
-                if (currentFlag.length !== textFlag.length) {
-                    console.error("FLAG 길이 불일치");
-                    return currentFlag;
-                }
-
-                const merged = currentFlag.split('').map((char, i) => {
-                    return textFlag[i] !== '0' ? textFlag[i] : char;
-                });
-
-                return merged.join('');
             }
 
             function showChoices(choiceLines) {
@@ -132,9 +97,8 @@
                     const parts = line.replace('$CHOICE$$', '').split('$');
                     if (parts.length < 2) continue;
 
-                    const file = parts[0].trim();       // ex: side/ep1/choice1.txt
-                    const label = parts[1].trim();      // ex: 마법 없이 문제를 해결하려 한다.
-
+                    const file = parts[0].trim();
+                    const label = parts[1].trim();
                     const newURL = `index.html?file=${encodeURIComponent(file)}&flag=${flag}&now=${now}`;
 
                     const btn = document.createElement('button');
@@ -148,10 +112,8 @@
                 }
             }
 
-
             if (filePath) {
                 fetch(filePath)
-
                     .then(res => {
                         if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
                         return res.text();
