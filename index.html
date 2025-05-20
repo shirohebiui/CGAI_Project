@@ -56,8 +56,8 @@
                     let page = pages[index].trim();
 
                     // END 처리
-                    if (page.includes("$END$")) {
-                        const [realPage] = page.split("$END$");
+                    if (page.includes('$END$')) {
+                        const [realPage] = page.split('$END$');
                         output.textContent = realPage.trim();
                         nextBtn.style.display = 'none';
                         showChoices(index + 1);
