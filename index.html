@@ -50,7 +50,7 @@
                         return res.text();
                     })
                     .then(text => {
-                        pages = text.split('$');
+                        pages = text.split("$NEXT$");
                         if (pages.length === 0) throw new Error("내용이 없습니다.");
                         showPage(currentPage);
                     })
