@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>텍스트 페이지 보기</title>
+    <style>
+        #nextBtn {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .choiceBtn {
+            display: block;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #eee;
+            border: 1px solid #aaa;
+            cursor: pointer;
+            width: fit-content;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>📄 파일 내용</h2>
+    <pre id="output">불러오는 중...</pre>
+    <button id="nextBtn">다음</button>
+    <div id="choices"></div>
+
+    <h2>🚩 FLAG 표시</h2>
+    <ul id="flags"></ul>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const filePath = params.get('file');
+            const flagString = params.get('flag'); // ex: "1010101010"
+            const filenow = params.get('now'); // ex: "1010101010"
+            /*
+            now는 플래그 진행단계
+            ex)now 3는 flag3번째를 참조하고있다는뜻
+            flag 0~9는 진행단계
+            a~z는 결과 단계
+            */
+            const output = document.getElementById('output');
+            const nextBtn = document.getElementById('nextBtn');
+            const choicesDiv = document.getElementById('choices');
+
+            // FLAG 분해 후 출력
+            let pages = []; // $NEXT$ 로 분할된 페이지 저장
+            let currentPage = 0;
+
+            function showPage(index) {
+                while (index < pages.length) {
+                    let page = pages[index].trim();
+                    if (page.startsWith('$CHOICE$')) {
+                        output.textContent = '선택지를 고르세요:';
+                        nextBtn.style.display = 'none';
+                        showChoices(index);
+                        return;
+                    }
+
+                    if (page === '') {
+                        index++;
+                        currentPage = index;
+                        continue;
+                    }
+
+                    output.textContent = page;
+                    nextBtn.style.display = 'inline-block';
+                    currentPage = index;
+                    return;
+                }
+
+                nextBtn.style.display = 'none';
+            }
+
+            function showPage(index) {
+                while (index < pages.length) {
+                    const page = pages[index].trim();
+
+                    // $CHOICE$만 있는 페이지는 건너뜀 (다음 버튼 불필요)
+                    if (page.startsWith('$CHOICE$') || page === '') {
+                        index++;
+                        currentPage = index;
+                        continue;
+                    }
+
+                    // 일반 페이지 출력
+                    output.textContent = page;
+                    nextBtn.style.display = 'inline-block';
+                    currentPage = index;
+                    return;
+                }
+
+                // 더 이상 출력할 페이지가 없다면 버튼 숨김
+                nextBtn.style.display = 'none';
+            }
+
+            if (filePath) {
+                fetch(filePath)
+                    .then(res => {
+                        if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
+                        return res.text();
+                    })
+                    .then(text => {
+                        pages = text.split('$NEXT$').map(s => s.trim()).filter(s => s.length > 0);
+                        showPage(currentPage);
+                    })
+                    .catch(err => {
+                        output.textContent = `에러: ${err.message}`;
+                    });
+            } else {
+                output.textContent = 'file 파라미터가 없습니다.';
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentPage++;
+                showPage(currentPage);
+            });
+        });
+    </script>
+</body>
+
+</html>
