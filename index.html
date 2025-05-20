@@ -72,11 +72,6 @@
                         currentPage = index;
                         continue;
                     }
-
-                    // // 일반 페이지
-                    // output.textContent = page;
-                    // nextBtn.style.display = 'inline-block';
-                    // currentPage = index;
                     return;
                 }
 
@@ -87,14 +82,18 @@
             function showChoices(choiceLines) {
                 choicesDiv.innerHTML = '';
                 for (const line of choiceLines) {
-                    const choiceText = line.replace('$CHOICE$', '').trim();
-                    const choiceId = choiceText.toLowerCase().replace(/\s+/g, '');
-                    const basePath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
-                    const nextFile = `${basePath}${choiceId}.txt`;
-                    const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flag}&now=${now}`;
+                    if (!line.startsWith('$CHOICE$$')) continue;
+
+                    const parts = line.replace('$CHOICE$$', '').split('$');
+                    if (parts.length < 2) continue;
+
+                    const file = parts[0].trim();       // ex: side/ep1/choice1.txt
+                    const label = parts[1].trim();      // ex: 마법 없이 문제를 해결하려 한다.
+
+                    const newURL = `index.html?file=${encodeURIComponent(file)}&flag=${flag}&now=${now}`;
 
                     const btn = document.createElement('button');
-                    btn.textContent = choiceText;
+                    btn.textContent = label;
                     btn.className = 'choiceBtn';
                     btn.addEventListener('click', () => {
                         window.location.href = newURL;
@@ -103,6 +102,7 @@
                     choicesDiv.appendChild(btn);
                 }
             }
+
 
 
             if (filePath) {
