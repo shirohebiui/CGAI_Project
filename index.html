@@ -102,7 +102,7 @@
                     const newURL = `index.html?file=${encodeURIComponent(file)}&flag=${flag}&now=${now}`;
 
                     const btn = document.createElement('button');
-                    btn.textContent = label;
+                    btn.textContent = file;
                     btn.className = 'choiceBtn';
                     btn.addEventListener('click', () => {
                         window.location.href = newURL;
