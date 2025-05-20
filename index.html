@@ -76,6 +76,10 @@
                     if (page.includes('$END$')) {
                         // 자동 분기 처리
                         processRandomFlagJump(flag, now);
+                        const flagFromText = (text.match(/\$FLAG\$(\d{10})/) || [])[1];
+                        if (flagFromText) {
+                            flag = mergeFlags(flag, flagFromText);  // flag는 전역 변수 또는 URL 파라미터로 받은 값
+                        }
                         return;
                     }
                     return;
@@ -153,10 +157,6 @@
                         return res.text();
                     })
                     .then(text => {
-                        const flagFromText = (text.match(/\$FLAG\$(\d{10})/) || [])[1];
-                        if (flagFromText) {
-                            flag = mergeFlags(flag, flagFromText);  // flag는 전역 변수 또는 URL 파라미터로 받은 값
-                        }
                         pages = text.split('$NEXT$').map(s => s.trim()).filter(s => s.length > 0);
                         showPage(currentPage);
                     })
