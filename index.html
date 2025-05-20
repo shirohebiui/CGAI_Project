@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>인터랙티브 스토리</title>
+    <title>인터랙티브 스토리 뷰어</title>
     <style>
         #nextBtn {
             margin-top: 10px;
@@ -24,7 +24,7 @@
 
 <body>
     <h2>📄 파일 내용</h2>
-    <pre id="output">불러오는 중...</pre>
+    <pre id="output">Loading...</pre>
     <button id="nextBtn">다음</button>
     <div id="choices"></div>
 
@@ -32,8 +32,8 @@
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const filePath = params.get('file');
-            const flag = params.get('flag');
-            const now = params.get('now');
+            let flag = params.get('flag') ?? '0000000000';
+            const now = params.get('now') ?? '';
 
             const output = document.getElementById('output');
             const nextBtn = document.getElementById('nextBtn');
@@ -41,19 +41,50 @@
 
             let pages = [];
             let currentPage = 0;
+
             function mergeFlags(currentFlag, textFlag) {
                 if (currentFlag.length !== textFlag.length) return currentFlag;
                 return currentFlag.split('').map((c, i) => textFlag[i] !== '0' ? textFlag[i] : c).join('');
             }
 
+            function jumpToRandomUnsetFlag(flag) {
+                const zeroIndices = [];
+                for (let i = 0; i < flag.length; i++) {
+                    if (flag[i] === '0') zeroIndices.push(i);
+                }
+                if (zeroIndices.length === 0) return;
+                const selected = zeroIndices[Math.floor(Math.random() * zeroIndices.length)];
+                const newFlag = flag.substring(0, selected) + '1' + flag.substring(selected + 1);
+                const nextFile = `data/side/ep${selected}/main.txt`;
+                const nextURL = `index.html?file=${nextFile}&flag=${newFlag}&now=${selected}`;
+
+                const jumpBtn = document.createElement('button');
+                jumpBtn.textContent = '\u2192 이동';
+                jumpBtn.className = 'jumpBtn';
+                jumpBtn.addEventListener('click', () => {
+                    window.location.href = nextURL;
+                });
+                choicesDiv.appendChild(jumpBtn);
+            }
+
             function showPage(index) {
                 while (index < pages.length) {
-                    const page = pages[index].trim();
+                    let page = pages[index].trim();
 
                     // $FLAG$ 감지 후 병합 처리
                     const matchFlag = page.match(/\$FLAG\$(\d{10})/);
                     if (matchFlag) {
                         flag = mergeFlags(flag, matchFlag[1]);
+                        page = page.replace(/\$FLAG\$\d{10}/, '').trim();
+                    }
+
+                    // $END$ 처리 후 랜덤 분기
+                    if (page.includes('$END$')) {
+                        page = page.replace('$END$', '').trim();
+                        output.textContent = page;
+                        nextBtn.style.display = 'none';
+                        jumpToRandomUnsetFlag(flag);
+                        return;
                     }
 
                     // $CHOICE$ 구조 검증 및 선택지 표시
