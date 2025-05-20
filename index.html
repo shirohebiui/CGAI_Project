@@ -50,11 +50,10 @@
             // FLAG 분해 후 출력
             let pages = []; // $로 분할된 페이지 저장
             let currentPage = 0;
-            let inChoices = false;
 
             function showPage(index) {
-                if (index < content.length) {
-                    const page = content[index].trim();
+                if (index < pages.length) {
+                    const page = pages[index].trim();
 
                     if (page === '$END$') {
                         output.textContent = '선택지를 고르세요:';
@@ -75,13 +74,22 @@
                     const line = pages[i].trim();
                     if (line.startsWith('$CHOICE$')) {
                         const choiceText = line.replace('$CHOICE$', '').trim();
+                        const choiceId = choiceText.toLowerCase().replace(/\s+/g, ''); // 공백 제거
+
                         const btn = document.createElement('button');
                         btn.textContent = choiceText;
                         btn.className = 'choiceBtn';
+
+                        // 파일 경로 계산
+                        const basePath = filePath.substring(0, filePath.lastIndexOf('/') + 1); // ep1/까지
+                        const nextFile = `${basePath}${choiceId}.txt`;
+
+                        const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flag}&now=${now}`;
+
                         btn.addEventListener('click', () => {
-                            output.textContent = `👉 "${choiceText}" 선택됨`;
-                            choicesDiv.innerHTML = '';
+                            window.location.href = newURL;
                         });
+
                         choicesDiv.appendChild(btn);
                     }
                 }
@@ -94,7 +102,7 @@
                         return res.text();
                     })
                     .then(text => {
-                        content = text.split('$').map(s => s.trim()).filter(s => s.length > 0);
+                        pages = text.split('$NEXT$').map(s => s.trim()).filter(s => s.length > 0);
                         showPage(currentPage);
                     })
                     .catch(err => {
@@ -104,7 +112,7 @@
                 output.textContent = 'file 파라미터가 없습니다.';
             }
 
-            nextBtn.addEventListener("click", () => {
+            nextBtn.addEventListener('click', () => {
                 currentPage++;
                 showPage(currentPage);
             });
