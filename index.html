@@ -52,20 +52,30 @@
             let currentPage = 0;
 
             function showPage(index) {
-                if (index < pages.length) {
+                while (index < pages.length) {
                     const page = pages[index].trim();
 
-                    if (page === '$END$') {
-                        output.textContent = '선택지를 고르세요:';
+                    if (page.includes('$END$')) {
+                        const [realPage] = page.split('$END$');
+                        output.textContent = realPage.trim();
                         nextBtn.style.display = 'none';
                         showChoices(index + 1);
-                    } else {
-                        output.textContent = page;
-                        nextBtn.style.display = 'inline-block';
+                        return;
                     }
-                } else {
-                    nextBtn.style.display = 'none';
+
+                    if (page.startsWith('$CHOICE$') || page === '') {
+                        index++;
+                        currentPage = index;
+                        continue;
+                    }
+
+                    output.textContent = page;
+                    nextBtn.style.display = 'inline-block';
+                    currentPage = index;
+                    return;
                 }
+
+                nextBtn.style.display = 'none';
             }
 
             function showChoices(startIndex) {
@@ -74,18 +84,14 @@
                     const line = pages[i].trim();
                     if (line.startsWith('$CHOICE$')) {
                         const choiceText = line.replace('$CHOICE$', '').trim();
-                        const choiceId = choiceText.toLowerCase().replace(/\s+/g, ''); // 공백 제거
+                        const choiceId = choiceText.toLowerCase().replace(/\s+/g, '');
+                        const basePath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
+                        const nextFile = `${basePath}${choiceId}.txt`;
+                        const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flag}&now=${now}`;
 
                         const btn = document.createElement('button');
                         btn.textContent = choiceText;
                         btn.className = 'choiceBtn';
-
-                        // 파일 경로 계산
-                        const basePath = filePath.substring(0, filePath.lastIndexOf('/') + 1); // ep1/까지
-                        const nextFile = `${basePath}${choiceId}.txt`;
-
-                        const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flag}&now=${now}`;
-
                         btn.addEventListener('click', () => {
                             window.location.href = newURL;
                         });
