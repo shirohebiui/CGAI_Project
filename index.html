@@ -1,64 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>TXT Viewer</title>
+    <meta charset="UTF-8">
+    <title>TXT Viewer</title>
 </head>
+
 <body>
-  <h2>📄 파일 내용</h2>
-<pre id="output">Loading...</pre>
+    <h2>📄 파일 내용</h2>
+    <pre id="output">Loading...</pre>
 
-<h2>🚩 FLAG 표시</h2>
-<ul id="flags"></ul>
+    <h2>🚩 FLAG 표시</h2>
+    <ul id="flags"></ul>
 
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const filePath = params.get('file');
-  const flagString = params.get('flag'); // ex: "1010101010"
-  const filenow = params.get('now'); // ex: "1010101010"
-  /*
-  now는 플래그 진행단계
-  ex)now 3는 flag3번째를 참조하고있다는뜻
-  flag 0~9는 진행단계
-  a~z는 결과 단계
-  */
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const filePath = params.get('file');
+        const flagString = params.get('flag'); // ex: "1010101010"
+        const filenow = params.get('now'); // ex: "1010101010"
+        /*
+        now는 플래그 진행단계
+        ex)now 3는 flag3번째를 참조하고있다는뜻
+        flag 0~9는 진행단계
+        a~z는 결과 단계
+        */
 
-  // FLAG 분해 후 출력
-  let pages = [];  // $로 분할된 페이지 저장
-    let currentPage = 0;
+        // FLAG 분해 후 출력
+        let pages = [];  // $로 분할된 페이지 저장
+        let currentPage = 0;
 
-    const output = document.getElementById('output');
-    const nextBtn = document.getElementById('nextBtn');
+        const output = document.getElementById('output');
+        const nextBtn = document.getElementById('nextBtn');
 
-    function showPage(index) {
-      output.textContent = pages[index].trim();
-      nextBtn.style.display = index < pages.length - 1 ? 'inline-block' : 'none';
-    }
+        function showPage(index) {
+            output.textContent = pages[index].trim();
+            nextBtn.style.display = index < pages.length - 1 ? 'inline-block' : 'none';
+        }
 
-    if (filePath) {
-      fetch(filePath)
-        .then(res => {
-          if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
-          return res.text();
-        })
-        .then(text => {
-          pages = text.split('$');
-          if (pages.length === 0) throw new Error('내용이 없습니다.');
-          showPage(currentPage);
-        })
-        .catch(err => {
-          output.textContent = `에러: ${err.message}`;
+        if (filePath) {
+            fetch(filePath)
+                .then(res => {
+                    if (!res.ok) throw new Error('파일을 불러올 수 없습니다');
+                    return res.text();
+                })
+                .then(text => {
+                    pages = text.split('$');
+                    if (pages.length === 0) throw new Error('내용이 없습니다.');
+                    showPage(currentPage);
+                })
+                .catch(err => {
+                    output.textContent = `에러: ${err.message}`;
+                });
+        } else {
+            output.textContent = 'file 파라미터가 없습니다.';
+        }
+
+        nextBtn.addEventListener('click', () => {
+            currentPage++;
+            if (currentPage < pages.length) {
+                showPage(currentPage);
+            }
         });
-    } else {
-      output.textContent = 'file 파라미터가 없습니다.';
-    }
-
-    nextBtn.addEventListener('click', () => {
-      currentPage++;
-      if (currentPage < pages.length) {
-        showPage(currentPage);
-      }
-    });
-</script>
+    </script>
 </body>
+
 </html>
