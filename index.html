@@ -99,10 +99,10 @@
 
                     const file = parts[0].trim();
                     const label = parts[1].trim();
-                    const newURL = `index.html?file=${encodeURIComponent(file)}&flag=${flag}&now=${now}`;
+                    const newURL = `index.html?file=${file}&flag=${flag}&now=${now}`;
 
                     const btn = document.createElement('button');
-                    btn.textContent = file;
+                    btn.textContent = label;
                     btn.className = 'choiceBtn';
                     btn.addEventListener('click', () => {
                         window.location.href = newURL;
