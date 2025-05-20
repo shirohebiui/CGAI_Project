@@ -70,6 +70,26 @@
                     nextBtn.style.display = 'none';
                 }
             }
+            
+            function showChoices() {
+                choicesDiv.innerHTML = '';
+                output.textContent = '선택지를 고르세요:';
+
+                for (let i = currentPage; i < content.length; i++) {
+                    const line = content[i].trim();
+                    if (line.startsWith('$CHOICE$')) {
+                        const choiceText = line.replace('$CHOICE$', '').trim();
+                        const btn = document.createElement('button');
+                        btn.textContent = choiceText;
+                        btn.className = 'choiceBtn';
+                        btn.addEventListener('click', () => {
+                            output.textContent = `👉 "${choiceText}" 선택됨`;
+                            choicesDiv.innerHTML = '';
+                        });
+                        choicesDiv.appendChild(btn);
+                    }
+                }
+            }
 
             if (filePath) {
                 fetch(filePath)
