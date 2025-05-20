@@ -81,27 +81,26 @@
                 nextBtn.style.display = 'none';
             }
 
-            function showChoices(startIndex) {
-                choicesDiv.innerHTML = '';
-                for (let i = startIndex; i < pages.length; i++) {
-                    const line = pages[i].trim();
-                    if (line.startsWith('$CHOICE$')) {
-                        const choiceText = line.replace('$CHOICE$', '').trim();
-                        const choiceId = choiceText.toLowerCase().replace(/\s+/g, '');
-                        const basePath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
-                        const nextFile = `${basePath}${choiceId}.txt`;
-                        const newURL = `index.html?file=${encodeURIComponent(nextFile)}&flag=${flagString}&now=${filenow}`;
+            function showPage(index) {
+                while (index < pages.length) {
+                    const page = pages[index].trim();
 
-                        const btn = document.createElement('button');
-                        btn.textContent = choiceText;
-                        btn.className = 'choiceBtn';
-                        btn.addEventListener('click', () => {
-                            window.location.href = newURL;
-                        });
-
-                        choicesDiv.appendChild(btn);
+                    // $CHOICE$만 있는 페이지는 건너뜀 (다음 버튼 불필요)
+                    if (page.startsWith('$CHOICE$') || page === '') {
+                        index++;
+                        currentPage = index;
+                        continue;
                     }
+
+                    // 일반 페이지 출력
+                    output.textContent = page;
+                    nextBtn.style.display = 'inline-block';
+                    currentPage = index;
+                    return;
                 }
+
+                // 더 이상 출력할 페이지가 없다면 버튼 숨김
+                nextBtn.style.display = 'none';
             }
 
             if (filePath) {
