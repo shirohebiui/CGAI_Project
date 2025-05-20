@@ -15,16 +15,18 @@
     const params = new URLSearchParams(window.location.search);
     const filePath = params.get('file'); // ex: file=data/example.txt
 
-    // FLAG 10개 출력
-    const flagList = document.getElementById('flags');
-    for (let i = 1; i <= 10; i++) {
-      const flag = params.get(`flag${i}`);
-      if (flag !== null) {
-        const li = document.createElement('li');
-        li.textContent = `FLAG ${i}: ${flag}`;
-        flagList.appendChild(li);
-      }
-    }
+     // FLAG 분해 후 출력
+  const flagList = document.getElementById('flags');
+  if (flagString && flagString.length === 10) {
+    [...flagString].forEach((char, index) => {
+      const li = document.createElement('li');
+      li.textContent = `FLAG ${index + 1}: ${char}`;
+      flagList.appendChild(li);
+    });
+  } else {
+    flagList.innerHTML = "<li>올바르지 않은 FLAG 형식입니다 (길이 10 필요)</li>";
+  }
+
 
     // txt 파일 불러오기
     if (filePath) {
